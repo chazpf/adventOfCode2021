@@ -93,47 +93,8 @@ const input = `<({<[(({(((({(<><>)[[][]]}<<()>{{}}>)(<{(){}}((){})>))<[((<><>){(
 <<[[[{[<[(<<<{<><>}(()[])>{{()()}[()[]]}>>)[<{[<[]()>({}{})]{{{}[]}[[]]}}{{{[]<>}{()()}}}>[[[[(){}]({}<>)]{
 <[<((<<<{<[({[[][]]<{}{}>})({{<>{}}[()<>]}(({}{})[[]()]))]({{(<><>)<<>()>}{[[]{}]}}({(()())[{}()`
 
+
 const parsedInput = input.split(`\n`)
-
-const findFirstErrorCharacter = line => {
-  const map = {
-    '}': '{',
-    ']': '[',
-    ')': '(',
-    '>': '<'
-  }
-  const openings = ['{', '[',  '(', '<']
-  const closures = ['}', ']', ')', '>']
-  const lineArr = line.split('')
-  const seenOpenings = []
-  for (let i = 0; i < lineArr.length - 1; i++) {
-    if (openings.includes(lineArr[i])) {
-      seenOpenings.push(lineArr[i])
-    } else if (closures.includes(lineArr[i]) && map[lineArr[i]] === seenOpenings[seenOpenings.length - 1]) {
-      seenOpenings.pop()
-    } else if (closures.includes(lineArr[i])) {
-      return lineArr[i]
-    }
-  }
-  return 0
-}
-
-const sumErrorScore = data => {
-  const map = {
-    0: 0,
-    '}': 1197,
-    ']': 57,
-    ')': 3,
-    '>': 25137
-  }
-  let sum = 0
-  for (const line of data) {
-    sum += map[findFirstErrorCharacter(line)]
-  }
-  return sum
-}
-
-// console.log(sumErrorScore(parsedInput));
 
 const isCorrupted = line => {
   const map = {
@@ -146,49 +107,45 @@ const isCorrupted = line => {
   const closures = ['}', ']', ')', '>']
   const lineArr = line.split('')
   const seenOpenings = []
-  for (let i = 0; i < lineArr.length - 1; i++) {
+  for (let i = 0; i < lineArr.length; i++) {
     if (openings.includes(lineArr[i])) {
       seenOpenings.push(lineArr[i])
     } else if (closures.includes(lineArr[i]) && map[lineArr[i]] === seenOpenings[seenOpenings.length - 1]) {
-      seenOpenings.pop()
     } else if (closures.includes(lineArr[i])) {
-      return true
+      return lineArr[i]
     }
   }
-  return false
+  return seenOpenings
 }
 
-const findIncompleteLines = data => {
-  const incompleteLines = []
+const sumErrorScore = data => {
+  const map = {
+    0: 0,
+    '}': 1197,
+    ']': 57,
+    ')': 3,
+    '>': 25137
+  }
+  let sum = 0
   for (const line of data) {
-    if (!isCorrupted(line)) {
-      incompleteLines.push(line)
+    if (typeof isCorrupted(line) === 'string') {
+      sum += map[isCorrupted(line)]
     }
   }
-  return incompleteLines
+  return sum
 }
+
+// console.log(sumErrorScore(parsedInput));
 
 const findCompletionString = line => {
   const map = {
-    '}': '{',
-    ']': '[',
-    ')': '(',
-    '>': '<',
     '{': '}',
     '[': ']',
     '(': ')',
     '<': '>'
   }
-  const lineArr = line.split('')
-  const openings = ['{', '[',  '(', '<']
-  const seenOpenings = []
-  for (let i = 0; i < lineArr.length; i++) {
-    if (openings.includes(lineArr[i])) {
-      seenOpenings.push(lineArr[i])
-    } else {
-      seenOpenings.pop()
-    }
-  }
+  const seenOpenings = isCorrupted(line)
+  if (typeof seenOpenings === 'string') return null
   const completionCharacters = []
   for (let i = seenOpenings.length - 1; i >= 0; i--) {
     completionCharacters.push(map[seenOpenings[i]])
@@ -200,12 +157,14 @@ const findCompletionString = line => {
 const findAllCompletionStrings = data => {
   const completionStrings = []
   for (const line of data) {
-    completionStrings.push(findCompletionString(line))
+    if (findCompletionString(line)) {
+      completionStrings.push(findCompletionString(line))
+    }
   }
   return completionStrings
 }
 
-const findMiddleCompetionScore = data => {
+const findMiddleCompletionScore = data => {
   data = findAllCompletionStrings(data)
   const map = {
     ')': 1,
@@ -238,4 +197,4 @@ const testInput = `[({(<(())[]>[[{[]{<()<>>
 <{([{{}}[<[[[<>{}]]]>[]]`
 const parsedTestInput = testInput.split(`\n`)
 
-console.log(findMiddleCompetionScore(findIncompleteLines(parsedInput)));
+console.log(findMiddleCompletionScore(parsedInput));
