@@ -111,6 +111,7 @@ const isCorrupted = line => {
     if (openings.includes(lineArr[i])) {
       seenOpenings.push(lineArr[i])
     } else if (closures.includes(lineArr[i]) && map[lineArr[i]] === seenOpenings[seenOpenings.length - 1]) {
+      seenOpenings.pop()
     } else if (closures.includes(lineArr[i])) {
       return lineArr[i]
     }
